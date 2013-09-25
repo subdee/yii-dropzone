@@ -74,7 +74,7 @@ class EDropzone extends CWidget {
                 'url' => $this->url,
                 'parallelUploads' => 1,
                 'paramName' => $this->name,
-                'accept' => "js:function(file, done){if(jQuery.inArray(file.type,{$this->mimeTypes})){done('File type not allowed.');}else{done();}}",
+                'accept' => "js:function(file, done){if(jQuery.inArray(file.type,{$this->mimeTypes}) == -1 ){done('File type not allowed.');}else{done();}}",
                 'init' => "js:function(){this.on('success',function(file){{$this->onSuccess}});}"
                 ), $this->options);
 
