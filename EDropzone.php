@@ -51,9 +51,20 @@ class EDropzone extends CWidget {
      */
     public $mimeTypes = array();
     /**
-     * @var string The Javascript to be called in case of a succesful upload
+     * @var array The Javascript to be called on any event
      */
-    public $onSuccess = false;
+    public $events = array();
+
+    /**
+     * @var array The HTML options using in the tag div
+     */
+    public $htmlOptions = array();
+
+    /**
+     * @var string The path to custom css file
+     */
+    public $customStyle = false;
+
 
     /**
      * Create a div and the appropriate Javascript to make the div into the file upload area
@@ -62,36 +73,46 @@ class EDropzone extends CWidget {
         if (!$this->url || $this->url == '')
             $this->url = Yii::app()->createUrl('site/upload');
 
-        echo CHtml::openTag('div', array('class' => 'dropzone', 'id' => 'fileup'));
-        echo CHtml::closeTag('div');
-
         if (!$this->name && ($this->model && $this->attribute) && $this->model instanceof CModel)
             $this->name = CHtml::activeName($this->model, $this->attribute);
 
+        echo CHtml::openTag('div', CMap::mergeArray(array('class' => 'dropzone', 'id' => $this->name), $this->htmlOptions));
+        echo CHtml::closeTag('div');
+
+
         $this->mimeTypes = CJavaScript::encode($this->mimeTypes);
+
+        $onEvents = '';
+        foreach($this->events as $event => $func){
+                $onEvents .= "this.on('{$event}', function(param, param2, param3){{$func}} );";
+
+        }
+
 
         $options = CMap::mergeArray(array(
                 'url' => $this->url,
-                'parallelUploads' => 1,
+                'parallelUploads' => 5,
                 'paramName' => $this->name,
-                'accept' => "js:function(file, done){if(jQuery.inArray(file.type,{$this->mimeTypes}) == -1 ){done('The File type '+file.type+' is not allowed !');}else{done();}}",
-                'init' => "js:function(){this.on('success',function(file){{$this->onSuccess}});}"
+                'accept' => "js:function(file, done){if(jQuery.inArray(file.type,{$this->mimeTypes}) == -1 ){done('File type not allowed.');}else{done();}}",
+                'init' => "js:function(){{$onEvents}}"
                 ), $this->options);
 
         $options = CJavaScript::encode($options);
 
-        $script = "Dropzone.options.fileup = {$options}";
+        $script = "Dropzone.options.{$this->name} = {$options}";
 
         $this->registerAssets();
-        Yii::app()->getClientScript()->registerScript(__CLASS__ . '#' . $this->getId(), $script, CClientScript::POS_END);
+        Yii::app()->getClientScript()->registerScript(__CLASS__ . '#' . $this->getId(), $script, CClientScript::POS_LOAD);
     }
 
     private function registerAssets() {
         $basePath = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR;
         $baseUrl = Yii::app()->getAssetManager()->publish($basePath, false, 1, YII_DEBUG);
         Yii::app()->getClientScript()->registerCoreScript('jquery');
-        Yii::app()->getClientScript()->registerScriptFile("{$baseUrl}/js/dropzone.js", CClientScript::POS_END);
+        Yii::app()->getClientScript()->registerScriptFile("{$baseUrl}/js/dropzone.js", CClientScript::POS_BEGIN);
         Yii::app()->getClientScript()->registerCssFile("{$baseUrl}/css/dropzone.css");
+        if(!$this->customStyle || $this->customStyle !== '')
+            Yii::app()->getClientScript()->registerCssFile($this->customStyle);
     }
 
 }
