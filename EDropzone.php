@@ -51,17 +51,19 @@ class EDropzone extends CWidget {
      */
     public $mimeTypes = array();
     /**
-     * @var string The Javascript to be called on any event
+     * @var array The Javascript to be called on any event
      */
     public $events = array();
 
     /**
-     * @var string The HTML options using in the tag div
+     * @var array The HTML options using in the tag div
      */
     public $htmlOptions = array();
 
-
-
+    /**
+     * @var string The path to custom css file
+     */
+    public $customStyle = false;
 
 
     /**
@@ -109,6 +111,8 @@ class EDropzone extends CWidget {
         Yii::app()->getClientScript()->registerCoreScript('jquery');
         Yii::app()->getClientScript()->registerScriptFile("{$baseUrl}/js/dropzone.js", CClientScript::POS_BEGIN);
         Yii::app()->getClientScript()->registerCssFile("{$baseUrl}/css/dropzone.css");
+        if(!$this->customStyle || $this->customStyle !== '')
+            Yii::app()->getClientScript()->registerCssFile($this->customStyle);
     }
 
 }
