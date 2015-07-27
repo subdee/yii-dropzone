@@ -102,8 +102,6 @@ class EDropzone extends CWidget {
 
 	/**
 	 * I prefer to render HTML from view file. But if you override Widget you must to override all view's.
-	 * review: you need to add style manually into your project css:
-	 * .dz-browser-not-supported .fallback {display:none !important}
 	 */
 	protected function renderHtml() {
 		$htmlOptions = CMap::mergeArray(array('class' => 'dropzone', 'enctype'=> 'multipart/form-data'), $this->htmlOptions);
@@ -117,6 +115,22 @@ class EDropzone extends CWidget {
 	}
 
 	protected function registerAssets() {
+		$this->registerAssetsBase();
+		if($this->customStyle)
+			Yii::app()->getClientScript()->registerCssFile($this->customStyle);
+	}
+
+	/**
+	 * To update JS or CSS register your own package in component 'clientScript'
+	 * @throws CException
+	 */
+	protected function registerAssetsBase() {
+		$cs = Yii::app()->getClientScript();
+		if (!empty($cs->packages['dropzone'])) {
+			$cs->registerPackage('dropzone');
+			return;
+		}
+
 		if ( $this->assetsVersion == self::VER_3_10_2 ) {
 			$basePath = dirname(__FILE__) . '/assets/';
 			$js = '/js/dropzone.js';
@@ -133,12 +147,12 @@ class EDropzone extends CWidget {
 		}
 
 		$baseUrl = Yii::app()->getAssetManager()->publish($basePath, false, 1, YII_DEBUG);
-		Yii::app()->getClientScript()
+		$cs
 			->registerScriptFile($baseUrl . $js, CClientScript::POS_BEGIN)
 			->registerCssFile($baseUrl . $css);
 
-		if($this->customStyle)
-			Yii::app()->getClientScript()->registerCssFile($this->customStyle);
+		//review: i have created the issue https://github.com/enyo/dropzone/issues/1019 , but till it did not resolved we must to add this style manually
+		$cs->registerCss(__METHOD__ . '#' . $this->getId(), '.dz-browser-not-supported .fallback {display:block !important}');
 	}
 
 	protected function jsOptions() {

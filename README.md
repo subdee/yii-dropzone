@@ -39,3 +39,20 @@ Now you can use all of the events and set a custom CSS file. See the code for mo
 	    'htmlOptions' => array('style'=>'height:95%; overflow: hidden;'),
 	    'customStyle'=> $this->module->assetsPath.'/css/customdropzone.css'
 	));
+
+To update JS or CSS register your own package 'dropzone' in component 'clientScript'.
+Eg. in config file:
+
+	return array(
+		'components' => array(
+			'clientScript' => array(
+				'packages' => array(
+					'dropzone' => array(
+						'basePath' => 'application.www.assets.vendor',
+						'js'       => array('dropzone.min.js'),
+						'css'      => array('dropzone.min.css'),
+					),
+				),
+			),
+		),
+	);
